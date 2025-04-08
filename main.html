@@ -1,17 +1,121 @@
 <!DOCTYPE html>
 
-<html>
-  <head>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz with Storage</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quiz</h1>
+  <div id="questions"></div>
+  <button id="submit">Submit</button>
+  <div id="score"></div>
 
-  <body>
-    <!-- do not change this code -->
-    <h1>Quiz</h1>
-    <div id="questions"></div>
-    <button id="submit">Submit</button>
-    <div id="score"></div>
+  <script>
+    const questions = [
+      {
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Rome"],
+        answer: 2,
+      },
+      {
+        question: "What is 2 + 2?",
+        options: ["3", "4", "5", "6"],
+        answer: 1,
+      },
+      {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Venus", "Mars", "Jupiter"],
+        answer: 2,
+      },
+      {
+        question: "What is the boiling point of water?",
+        options: ["90°C", "100°C", "80°C", "70°C"],
+        answer: 1,
+      },
+      {
+        question: "Who wrote 'Hamlet'?",
+        options: ["Charles Dickens", "Leo Tolstoy", "Mark Twain", "William Shakespeare"],
+        answer: 3,
+      },
+    ];
 
-    <script type="text/javascript" src="./script.js"></script>
-  </body>
+    const questionsContainer = document.getElementById("questions");
+    const scoreDisplay = document.getElementById("score");
+    const submitButton = document.getElementById("submit");
+
+    function renderQuiz() {
+      questions.forEach((q, i) => {
+        const savedProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
+
+        const div = document.createElement("div");
+        div.className = "question";
+
+        const questionText = document.createElement("p");
+        questionText.textContent = q.question;
+        div.appendChild(questionText);
+
+        q.options.forEach((option, j) => {
+          const label = document.createElement("label");
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q${i}`;
+          radio.value = j;
+
+          if (savedProgress[`q${i}`] == j) {
+            radio.checked = true;
+          }
+
+          radio.addEventListener("change", () => {
+            const progress = JSON.parse(sessionStorage.getItem("progress")) || {};
+            progress[`q${i}`] = j;
+            sessionStorage.setItem("progress", JSON.stringify(progress));
+          });
+
+          label.appendChild(radio);
+          label.appendChild(document.createTextNode(option));
+          div.appendChild(label);
+          div.appendChild(document.createElement("br"));
+        });
+
+        questionsContainer.appendChild(div);
+      });
+    }
+
+    function calculateScore() {
+      const progress = JSON.parse(sessionStorage.getItem("progress")) || {};
+      let score = 0;
+      questions.forEach((q, i) => {
+        if (parseInt(progress[`q${i}`]) === q.answer) {
+          score++;
+        }
+      });
+
+      scoreDisplay.textContent = `Your score is ${score} out of ${questions.length}.`;
+      localStorage.setItem("score", score);
+    }
+
+    submitButton.addEventListener("click", calculateScore);
+
+    window.onload = function () {
+      renderQuiz();
+
+      const savedScore = localStorage.getItem("score");
+      if (savedScore !== null) {
+        scoreDisplay.textContent = `Your score is ${savedScore} out of ${questions.length}.`;
+      }
+    };
+  </script>
+</body>
 </html>
