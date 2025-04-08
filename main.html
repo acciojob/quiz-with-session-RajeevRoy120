@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,6 +11,10 @@
     }
     .question {
       margin-bottom: 20px;
+    }
+    .unanswered {
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -63,7 +65,7 @@
         div.className = "question";
 
         const questionText = document.createElement("p");
-        questionText.textContent = q.question;
+        questionText.textContent = `${i + 1}. ${q.question}`;
         div.appendChild(questionText);
 
         q.options.forEach((option, j) => {
@@ -96,14 +98,27 @@
     function calculateScore() {
       const progress = JSON.parse(sessionStorage.getItem("progress")) || {};
       let score = 0;
+      let unanswered = [];
+
       questions.forEach((q, i) => {
-        if (parseInt(progress[`q${i}`]) === q.answer) {
+        if (progress[`q${i}`] === undefined) {
+          unanswered.push(i + 1);
+        } else if (parseInt(progress[`q${i}`]) === q.answer) {
           score++;
         }
       });
 
-      scoreDisplay.textContent = `Your score is ${score} out of ${questions.length}.`;
+      let message = `Your score is ${score} out of ${questions.length}.`;
+      if (unanswered.length > 0) {
+        message += ` You did not answer question(s): ${unanswered.join(", ")}.`;
+      }
+      if (score < 3) {
+        message += " Try again to improve your score!";
+      }
+
+      scoreDisplay.textContent = message;
       localStorage.setItem("score", score);
+      sessionStorage.removeItem("progress");
     }
 
     submitButton.addEventListener("click", calculateScore);
